@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Dashboard Dette</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .amount {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #667eea;
+            margin: 10px 0;
+        }
+
+        .progress-container {
+            margin: 20px 0;
+        }
+
+        .progress-bar {
+            height: 12px;
+            background: #e2e8f0;
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #34d399);
+            transition: width 0.8s ease;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .timeline {
+            margin-top: 20px;
+        }
+
+        .timeline-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-left: 3px solid #667eea;
+            margin-bottom: 10px;
+            background: #f7fafc;
+            border-radius: 0 10px 10px 0;
+        }
+
+        .timeline-date {
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .timeline-amount {
+            font-weight: 700;
+            color: #10b981;
+        }
+
+        .remaining {
+            color: #718096;
+            font-size: 0.9rem;
+        }
+
+        .details-section {
+            margin-top: 30px;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .detail-item:last-child {
+            border-bottom: none;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #2d3748;
+        }
+
+        .notification {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 10px 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .warning-box {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .monthly-charge {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .amount {
+                font-size: 2rem;
+            }
+        }
+
+        .interactive-calculator {
+            margin-top: 20px;
+        }
+
+        .calculator input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .emoji {
+            font-size: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-chart-line"></i> Dashboard Dette</h1>
+            <p>Suivi en temps réel de la dette avec nouveau plan de remboursement</p>
+        </div>
+
+        <div class="warning-box">
+            <i class="fas fa-exclamation-triangle"></i> 
+            <strong>NOUVEAU PLAN :</strong> 4 loyers de 750€ ajoutés (sept-déc 2025) - Remboursements à partir de janvier 2026
+        </div>
+
+        <div class="notification" id="notification">
+            <i class="fas fa-bell"></i> 
+            <span id="notification-text">Prochain remboursement : 300€ le 1er janvier 2026</span>
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- Card 1 : Vue d'ensemble -->
+            <div class="card">
+                <div class="card-title">
+                    <i class="fas fa-wallet"></i>
+                    Vue d'ensemble
+                </div>
+                <div class="amount" id="totalAmount">7 562,00 €</div>
+                <p style="color: #718096; margin-bottom: 20px;">Total à rembourser (janvier 2026)</p>
+                
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <p style="text-align: right; margin-top: 5px; font-size: 0.9rem; color: #718096;">
+                        <span id="progressText">0%</span> complété
+                    </p>
+                </div>
+
+                <div style="margin-top: 20px; padding: 15px; background: #f0f9ff; border-radius: 10px;">
+                    <p><strong>📅 Début remboursement :</strong> Janvier 2026</p>
+                    <p><strong>💳 Mensualité fixe :</strong> 300€/mois</p>
+                    <p><strong>🗓️ Durée totale :</strong> 26 mois</p>
+                    <p><strong>🎯 Fin prévue :</strong> Février 2028</p>
+                </div>
+            </div>
+
+            <!-- Card 2 : Détails de la dette décomposée -->
+            <div class="card">
+                <div class="card-title">
+                    <i class="fas fa-list-ul"></i>
+                    Détails complet de la dette
+                </div>
+                <div class="details-section">
+                    <div class="detail-item">
+                        <span>Dette actuelle (avant loyers)</span>
+                        <span>4 562,00 €</span>
+                    </div>
+                    
+                    <div class="monthly-charge">
+                        <strong>LOYERS À VENIR (maison) :</strong>
+                    </div>
+                    
+                    <div class="detail-item" style="background: #fef2f2; padding: 10px; border-radius: 5px;">
+                        <span><i class="fas fa-home"></i> Loyer septembre 2025</span>
+                        <span>750,00 €</span>
+                    </div>
+                    <div class="detail-item" style="background: #fef2f2; padding: 10px; border-radius: 5px;">
+                        <span><i class="fas fa-home"></i> Loyer octobre 2025</span>
+                        <span>750,00 €</span>
+                    </div>
+                    <div class="detail-item" style="background: #fef2f2; padding: 10px; border-radius: 5px;">
+                        <span><i class="fas fa-home"></i> Loyer novembre 2025</span>
+                        <span>750,00 €</span>
+                    </div>
+                    <div class="detail-item" style="background: #fef2f2; padding: 10px; border-radius: 5px;">
+                        <span><i class="fas fa-home"></i> Loyer décembre 2025</span>
+                        <span>750,00 €</span>
+                    </div>
+                    
+                    <div class="detail-item" style="background: #dbeafe; padding: 15px; border-radius: 10px; margin-top: 10px;">
+                        <span><strong>🔥 TOTAL À REMBOURSER</strong></span>
+                        <span><strong>7 562,00 €</strong></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3 : Calendrier 2026-2028 -->
+            <div class="card">
+                <div class="card-title">
+                    <i class="fas fa-calendar-alt"></i>
+                    Calendrier de remboursement (2026-2028)
+                </div>
+                <div class="timeline" id="timeline">
+                    <!-- Généré dynamiquement -->
+                </div>
+            </div>
+
+            <!-- Card 4 : Calculateur interactif -->
+            <div class="card">
+                <div class="card-title">
+                    <i class="fas fa-calculator"></i>
+                    Calculateur de remboursement
+                </div>
+                <div class="interactive-calculator">
+                    <label>Mensualité souhaitée (€) :</label>
+                    <input type="number" id="monthlyPayment" value="300" min="100" max="1500">
+                    <div id="calculationResult">
+                        <p><strong>Durée :</strong> <span id="duration">26 mois</span></p>
+                        <p><strong>Fin prévue :</strong> <span id="endDate">Février 2028</span></p>
+                    </div>
+                    <button class="btn" onclick="updateCalculation()">
+                        <i class="fas fa-sync-alt"></i> Recalculer
+                    </button>
+                </div>
+            </div>
+
+            <!-- Card 5 : Période d'attente -->
+            <div class="card">
+                <div class="card-title">
+                    <i class="fas fa-pause-circle"></i>
+                    Période d'attente
+                </div>
+                <div style="text-align: center; padding: 20px;">
+                    <div style="font-size: 3rem; margin-bottom: 20px;">⏸️</div>
+                    <h3>Pas de remboursement en 2025</h3>
+                    <p style="color: #718096; margin: 15px 0;">
+                        Les remboursements reprendront en janvier 2026
+                    </p>
+                    <div style="background: #f3f4f6; padding: 15px; border-radius: 10px; margin-top: 15px;">
+                        <p><strong>Prochaine échéance :</strong></p>
+                        <p style="font-size: 1.2rem; color: #667eea;">1er janvier 2026</p>
+                        <p><strong>Montant :</strong> 300€</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 6 : Actions rapides -->
+            <div class="card">
+                <div class="card-title">
+                    <i class="fas fa-bolt"></i>
+                    Actions rapides
+                </div>
+                <button class="btn" onclick="setReminder()">
+                    <i class="fas fa-bell"></i> Rappel janvier 2026
+                </button>
+                <button class="btn" onclick="exportData()">
+                    <i class="fas fa-download"></i> Exporter le plan
+                </button>
+                <button class="btn" onclick="sharePlan()">
+                    <i class="fas fa-share-alt"></i> Partager le plan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Données mises à jour
+        const totalDebt = 7562; // 4562 + 3000 (4×750)
+        let paidAmount = 0;
+        const monthlyPayment = 300;
+        const startYear = 2026;
+        const startMonth = 0; // Janvier
+
+        // Initialisation
+        function initDashboard() {
+            updateProgress();
+            generateTimeline();
+            showNotification();
+        }
+
+        // Mise à jour de la progression
+        function updateProgress() {
+            const percentage = (paidAmount / totalDebt) * 100;
+            document.getElementById('progressFill').style.width = percentage + '%';
+            document.getElementById('progressText').textContent = percentage.toFixed(1) + '%';
+        }
+
+        // Génération du calendrier 2026-2028
+        function generateTimeline() {
+            const timeline = document.getElementById('timeline');
+            const months = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 
+                          'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+            
+            let remaining = totalDebt;
+            let html = '';
+            let year = startYear;
+            let monthIndex = startMonth;
+
+            while (remaining > 0) {
+                const payment = Math.min(monthlyPayment, remaining);
+                remaining -= payment;
+                
+                const monthName = months[monthIndex];
+                
+                html += `
+                    <div class="timeline-item">
+                        <span class="timeline-date">1er ${monthName} ${year}</span>
+                        <div>
+                            <span class="timeline-amount">-300€</span>
+                            <span class="remaining">Reste : ${remaining.toLocaleString('fr-FR')}€</span>
+                        </div>
+                    </div>
+                `;
+
+                monthIndex++;
+                if (monthIndex > 11) {
+                    monthIndex = 0;
+                    year++;
+                }
+            }
+
+            timeline.innerHTML = html;
+        }
+
+        // Notifications
+        function showNotification() {
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notification-text');
+            
+            notificationText.textContent = 'Prochain remboursement : 300€ le 1er janvier 2026';
+            notification.style.display = 'block';
+        }
+
+        // Calculateur interactif
+        function updateCalculation() {
+            const payment = parseInt(document.getElementById('monthlyPayment').value);
+            const months = Math.ceil(totalDebt / payment);
+            
+            const endDate = new Date(startYear, startMonth, 1);
+            endDate.setMonth(endDate.getMonth() + months - 1);
+            
+            const monthsFr = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 
+                             'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+            
+            document.getElementById('duration').textContent = `${months} mois`;
+            document.getElementById('endDate').textContent = `${monthsFr[endDate.getMonth()]} ${endDate.getFullYear()}`;
+        }
+
+        // Fonctions d'action
+        function setReminder() {
+            alert('Rappel configuré pour le 1er janvier 2026 !');
+        }
+
+        function exportData() {
+            alert('Export du plan de remboursement en PDF...');
+        }
+
+        function sharePlan() {
+            alert('Lien de partage généré pour Sara !');
+        }
+
+        // Initialiser au chargement
+        initDashboard();
+    </script>
+</body>
+</html>
